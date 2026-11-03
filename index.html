@@ -1,0 +1,1353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Interactive mid-fidelity MVP prototype of App Inventor Academy: 8 screens in English with a Spanish toggle.">
+<style>:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<title>App Inventor Academy Prototype</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Nunito+Sans:opsz,wght@6..12,400..800&display=swap">
+<style>
+/* Layout: a phone-sized app (the prototype) beside a slim facilitator column; on phones the app fills the screen. */
+:root {
+  /* outer page (theme-aware) */
+  --page-bg: #E8ECF2;
+  --page-fg: #14213D;
+  --page-muted: #55627A;
+  --page-card: #FBFCFD;
+  --page-line: #D2D9E4;
+  --page-accent: #3F7A1C;
+  --page-good: #2F6B16;
+  --page-warn: #9A5B00;
+  --page-chip: #E3E8F0;
+  /* the app's own identity (single light look, like the real product) */
+  --navy: #0E2340;
+  --navy-2: #1B3A66;
+  --green: #3F7A1C;
+  --green-soft: #E5F1DA;
+  --amber: #F2A900;
+  --amber-soft: #FFF3D1;
+  --ink: #14213D;
+  --muted: #55627A;
+  --line: #DCE2EC;
+  --surface: #FFFFFF;
+  --app-bg: #F2F5F9;
+  --lock: #7D889A;
+  --danger: #B3261E;
+  --linkedin: #0A66C2;
+  --on-dark: #F4F7FB;
+  --on-dark-muted: #C3CEDF;
+  /* type */
+  --display: "Bricolage Grotesque", "Trebuchet MS", Arial, sans-serif;
+  --body: "Nunito Sans", "Segoe UI", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page-bg: #0B1220; --page-fg: #E7ECF4; --page-muted: #9EABC0; --page-card: #121B2E;
+    --page-line: #26334C; --page-accent: #86C65A; --page-good: #86C65A; --page-warn: #F2B544; --page-chip: #1C2840;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page-bg: #0B1220; --page-fg: #E7ECF4; --page-muted: #9EABC0; --page-card: #121B2E;
+  --page-line: #26334C; --page-accent: #86C65A; --page-good: #86C65A; --page-warn: #F2B544; --page-chip: #1C2840;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+body {
+  background: var(--page-bg);
+  color: var(--page-fg);
+  font-family: var(--body);
+  font-size: 15px;
+  line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 24px;
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 3px solid var(--amber); outline-offset: 2px; }
+
+.stage {
+  max-width: 1180px; margin: 0 auto;
+  display: grid; grid-template-columns: minmax(0, 1fr) 400px; gap: 40px; align-items: start;
+}
+.side { display: flex; flex-direction: column; gap: 20px; min-width: 0; padding-top: 12px; }
+.side h1 { font-family: var(--display); font-size: 34px; line-height: 1.1; margin: 0; font-weight: 800; text-wrap: balance; }
+.side .kicker { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; font-weight: 800; color: var(--page-accent); margin: 0; }
+.side p { margin: 0; color: var(--page-muted); max-width: 60ch; }
+.side-card { background: var(--page-card); border: 1px solid var(--page-line); border-radius: 14px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.side-card h2 { font-family: var(--display); font-size: 18px; margin: 0; }
+.side-card ol { margin: 0; padding-left: 20px; color: var(--page-muted); display: grid; gap: 6px; }
+.side-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.btn-outline { background: transparent; border: 1.5px solid var(--page-line); color: var(--page-fg); border-radius: 999px; padding: 8px 16px; font-weight: 700; }
+.btn-outline:hover { border-color: var(--page-accent); }
+.rec { font-size: 13px; color: var(--page-muted); display: flex; align-items: center; gap: 8px; }
+.rec i { width: 8px; height: 8px; border-radius: 50%; background: var(--page-muted); display: inline-block; flex: none; }
+.rec.on i { background: var(--page-accent); }
+
+/* ---------- device ---------- */
+.device {
+  width: 400px; height: min(840px, calc(100vh - 48px)); min-height: 640px;
+  background: #0A1526; border-radius: 44px; padding: 12px;
+  box-shadow: 0 30px 60px -30px rgba(10, 21, 38, .55);
+  position: sticky; top: 24px;
+}
+.app {
+  height: 100%; border-radius: 34px; overflow: hidden; position: relative;
+  background: var(--app-bg); color: var(--ink); display: flex; flex-direction: column;
+}
+.appbar {
+  background: var(--navy); color: var(--on-dark); display: flex; align-items: center; gap: 8px;
+  padding: 14px 14px 12px; flex: none;
+}
+.appbar .title { flex: 1; min-width: 0; font-family: var(--display); font-weight: 700; font-size: 16px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.icon-btn { background: transparent; border: 0; color: var(--on-dark); width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; flex: none; }
+.icon-btn:hover { background: rgba(255,255,255,.1); }
+.icon-btn[hidden] { display: none !important; }
+.lang { display: flex; background: rgba(255,255,255,.12); border-radius: 999px; padding: 3px; flex: none; }
+.lang button { border: 0; background: transparent; color: var(--on-dark-muted); font-weight: 800; font-size: 12px; padding: 5px 10px; border-radius: 999px; letter-spacing: .04em; }
+.lang button[aria-pressed="true"] { background: var(--amber); color: var(--navy); }
+.screen { flex: 1; overflow-y: auto; overscroll-behavior: contain; }
+.pad { padding: 18px 18px 28px; display: flex; flex-direction: column; gap: 16px; }
+
+/* ---------- app components ---------- */
+.eyebrow { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; font-weight: 800; margin: 0; }
+h2.h { font-family: var(--display); font-size: 24px; line-height: 1.15; margin: 0; font-weight: 800; text-wrap: balance; }
+h3.h { font-family: var(--display); font-size: 17px; line-height: 1.25; margin: 0; font-weight: 700; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+p { margin: 0; }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px; }
+.cta {
+  border: 0; background: var(--green); color: #fff; font-weight: 800; font-size: 16px;
+  padding: 14px 18px; border-radius: 12px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.cta:hover { background: #356A16; }
+.cta[disabled] { background: #B9C3D1; color: #F4F6F9; cursor: not-allowed; }
+.cta.secondary { background: var(--surface); color: var(--navy); border: 1.5px solid var(--line); }
+.cta.secondary:hover { border-color: var(--navy); }
+.cta.dark { background: var(--navy); }
+.cta.dark:hover { background: var(--navy-2); }
+.cta.linkedin { background: var(--linkedin); }
+.cta.linkedin:hover { background: #08519A; }
+.textlink { background: none; border: 0; color: inherit; text-decoration: underline; font-weight: 700; padding: 4px 0; }
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 800; border-radius: 999px; padding: 4px 10px; }
+.chip.amber { background: var(--amber-soft); color: #6E4A00; }
+.chip.green { background: var(--green-soft); color: #2D5A12; }
+.chip.lock { background: #E8ECF2; color: #4F5B6E; }
+.bar { height: 10px; background: #DCE3EC; border-radius: 999px; overflow: hidden; }
+.bar > i { display: block; height: 100%; background: var(--green); border-radius: 999px; transition: width .4s ease; }
+.svg { width: 18px; height: 18px; flex: none; }
+
+/* hero */
+.hero { background: var(--navy); color: var(--on-dark); padding: 26px 20px 28px; display: flex; flex-direction: column; gap: 14px; }
+.hero .eyebrow { color: var(--amber); }
+.hero h2 { font-family: var(--display); font-size: 31px; line-height: 1.05; font-weight: 800; margin: 0; letter-spacing: -.01em; }
+.hero h2 span { display: block; }
+.hero h2 span:last-child { color: var(--amber); }
+.hero p { color: var(--on-dark-muted); }
+.hero .note { font-size: 13px; color: var(--on-dark-muted); text-align: center; }
+.proof { display: flex; gap: 14px; align-items: center; }
+.proof .big { font-family: var(--display); font-weight: 800; font-size: 36px; color: var(--green); line-height: 1; }
+.feature { display: grid; grid-template-columns: 40px minmax(0,1fr); gap: 12px; align-items: start; }
+.feature .ico { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; background: var(--green-soft); color: var(--green); }
+
+/* forms */
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label { font-weight: 800; font-size: 14px; }
+.field input, .field select, .field textarea {
+  border: 1.5px solid var(--line); border-radius: 10px; padding: 11px 12px; background: var(--surface); color: var(--ink); width: 100%;
+}
+.field textarea { min-height: 110px; resize: vertical; }
+.field input:focus, .field select:focus, .field textarea:focus { border-color: var(--navy-2); outline: none; box-shadow: 0 0 0 3px rgba(27,58,102,.18); }
+.field.err input, .field.err select, .field.err textarea { border-color: var(--danger); }
+.field .msg { font-size: 13px; color: var(--danger); font-weight: 700; }
+.field .hint { font-size: 13px; color: var(--muted); }
+.timebox { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: var(--amber-soft); border-radius: 12px; padding: 10px 14px; }
+.timebox strong { color: #6E4A00; display: flex; gap: 6px; align-items: center; }
+.privacy { font-size: 12.5px; color: var(--muted); }
+
+/* dashboard */
+.greet { background: var(--navy-2); color: var(--on-dark); padding: 22px 18px; display: flex; flex-direction: column; gap: 4px; }
+.greet h2 { font-family: var(--display); font-size: 26px; margin: 0; font-weight: 800; }
+.greet p { color: var(--on-dark-muted); font-size: 14px; }
+.next { background: var(--amber-soft); border: 1.5px solid #F2D27A; border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.next .eyebrow { color: #7A5200; }
+.path { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.path li { display: grid; grid-template-columns: 28px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.path li:first-child { border-top: 0; }
+.dot { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; font-weight: 800; border: 2px solid var(--line); color: var(--muted); background: var(--surface); }
+.dot.done { background: var(--green); border-color: var(--green); color: #fff; }
+.dot.now { border-color: var(--amber); color: #6E4A00; }
+.dot.locked { color: var(--lock); }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; }
+.stat { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 12px 8px; text-align: center; }
+.stat b { display: block; font-family: var(--display); font-size: 22px; font-variant-numeric: tabular-nums; }
+.stat span { font-size: 12px; color: var(--muted); font-weight: 700; }
+
+/* module */
+.mod-head { background: var(--navy-2); color: var(--on-dark); padding: 22px 18px; display: flex; flex-direction: column; gap: 8px; }
+.mod-head .eyebrow { color: var(--amber); }
+.mod-head h2 { font-family: var(--display); font-size: 25px; margin: 0; line-height: 1.1; font-weight: 800; }
+.mod-head p { color: var(--on-dark-muted); font-size: 14px; }
+.step { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.step.is-done { border-color: #B7D79E; }
+.step-head { display: grid; grid-template-columns: 30px minmax(0,1fr) 20px; gap: 12px; align-items: start; padding: 14px; width: 100%; background: none; border: 0; text-align: left; }
+.step-head[disabled] { cursor: default; }
+.step-meta { display: flex; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); margin-top: 4px; }
+.step-meta span { display: inline-flex; gap: 4px; align-items: center; }
+.step-body { padding: 0 14px 14px 56px; display: flex; flex-direction: column; gap: 10px; font-size: 14px; }
+.step-body ol { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.result { color: #2D5A12; font-weight: 700; font-size: 13px; display: block; margin-top: 4px; }
+.st-title { display: block; font-family: var(--display); font-size: 17px; line-height: 1.25; font-weight: 700; color: var(--ink); }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.choice { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 14px; font-weight: 700; font-size: 14px; }
+.choice[aria-pressed="true"] { border-color: var(--green); background: var(--green-soft); color: #2D5A12; }
+.done-btn { align-self: flex-start; border: 1.5px solid var(--green); background: var(--surface); color: var(--green); border-radius: 10px; padding: 8px 14px; font-weight: 800; display: inline-flex; gap: 6px; align-items: center; }
+.done-btn.on { background: var(--green); color: #fff; }
+
+/* activity */
+.mission { background: var(--amber); color: var(--navy); padding: 22px 18px; display: flex; flex-direction: column; gap: 8px; }
+.mission h2 { font-family: var(--display); font-size: 27px; line-height: 1.05; margin: 0; font-weight: 800; }
+.mission p { font-size: 14px; }
+.ev-opt { display: grid; grid-template-columns: 40px minmax(0,1fr) 22px; gap: 12px; align-items: center; text-align: left; width: 100%; background: var(--surface); border: 1.5px solid var(--line); border-radius: 14px; padding: 12px 14px; }
+.ev-opt[aria-pressed="true"] { border-color: var(--green); background: var(--green-soft); }
+.ev-opt .ico { width: 40px; height: 40px; border-radius: 10px; background: var(--app-bg); display: grid; place-items: center; color: var(--navy-2); }
+.radio { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--line); display: grid; place-items: center; }
+.ev-opt[aria-pressed="true"] .radio { border-color: var(--green); background: var(--green); color: #fff; }
+.example { display: grid; grid-template-columns: 40px minmax(0,1fr); gap: 12px; }
+.avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--navy-2); color: var(--on-dark); display: grid; place-items: center; font-weight: 800; font-size: 14px; }
+
+/* evidence */
+.steps-ind { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 6px; }
+.steps-ind div { font-size: 12px; font-weight: 800; color: var(--muted); display: flex; flex-direction: column; gap: 6px; }
+.steps-ind div i { height: 6px; border-radius: 999px; background: #DCE3EC; display: block; }
+.steps-ind div.on { color: var(--ink); }
+.steps-ind div.on i { background: var(--green); }
+.drop { border: 2px dashed #B6C2D3; border-radius: 14px; padding: 18px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; background: var(--surface); }
+.drop img { max-height: 160px; border-radius: 10px; object-fit: cover; }
+.file-name { font-weight: 800; word-break: break-all; }
+.verifying { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 60px 20px; text-align: center; }
+.spinner { width: 44px; height: 44px; border-radius: 50%; border: 4px solid #DCE3EC; border-top-color: var(--green); animation: spin 0.9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* certificate */
+.verified { background: var(--green); color: #fff; padding: 14px 18px; display: flex; gap: 10px; align-items: center; }
+.verified b { font-family: var(--display); font-size: 18px; }
+.cert { background: var(--surface); border: 6px solid var(--navy); border-radius: 6px; padding: 18px 16px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 6px; position: relative; }
+.cert::after { content: ""; position: absolute; inset: 4px; border: 1px solid var(--amber); pointer-events: none; }
+.cert .brand { font-family: var(--display); font-weight: 800; letter-spacing: .08em; font-size: 13px; color: var(--navy); }
+.cert .level { font-size: 11px; letter-spacing: .14em; font-weight: 800; color: #8A5D00; text-transform: uppercase; }
+.cert .name { font-family: var(--display); font-weight: 800; font-size: 26px; color: var(--navy); line-height: 1.1; }
+.cert .comp { font-weight: 800; color: var(--navy); font-size: 15px; line-height: 1.35; }
+.cert .meta { font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.seal { width: 56px; height: 56px; border-radius: 50%; background: var(--amber); color: var(--navy); display: grid; place-items: center; }
+
+/* upgrade */
+.module-row { display: grid; grid-template-columns: 28px minmax(0,1fr) auto; gap: 10px; align-items: center; padding: 10px 0; border-top: 1px solid var(--line); }
+.module-row:first-of-type { border-top: 0; }
+.module-row.locked .t { color: var(--lock); }
+.plan { background: var(--surface); border: 1.5px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.plan.featured { border-color: var(--amber); background: #FFFBEF; }
+.plan .price { font-family: var(--display); font-size: 28px; font-weight: 800; line-height: 1; }
+.plan .price small { font-size: 13px; font-family: var(--body); color: var(--muted); font-weight: 700; }
+.plan ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 14px; }
+.plan li { display: grid; grid-template-columns: 18px minmax(0,1fr); gap: 8px; }
+.plan li .svg { color: var(--green); margin-top: 2px; }
+
+/* feedback */
+.scale { display: grid; grid-template-columns: repeat(5, minmax(0,1fr)); gap: 6px; }
+.scale button { border: 1.5px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 0; font-weight: 800; }
+.scale button[aria-pressed="true"] { border-color: var(--green); background: var(--green-soft); color: #2D5A12; }
+.scale-labels { display: flex; justify-content: space-between; font-size: 12px; color: var(--muted); }
+
+/* overlays */
+.sheet-wrap { position: absolute; inset: 0; background: rgba(10,21,38,.5); display: flex; align-items: flex-end; z-index: 20; }
+.sheet { background: var(--surface); width: 100%; border-radius: 20px 20px 0 0; padding: 20px 18px calc(22px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 12px; max-height: 88%; overflow-y: auto; }
+.post { background: var(--app-bg); border-radius: 12px; padding: 12px 14px; font-size: 14px; white-space: pre-wrap; }
+.toast { position: absolute; left: 16px; right: 16px; bottom: 18px; background: var(--navy); color: var(--on-dark); border-radius: 12px; padding: 12px 14px; font-weight: 700; font-size: 14px; z-index: 30; box-shadow: 0 10px 30px -10px rgba(0,0,0,.4); }
+
+/* ---------- facilitator results ---------- */
+.results { max-width: 1180px; margin: 40px auto 0; display: flex; flex-direction: column; gap: 18px; }
+.results h2 { font-family: var(--display); font-size: 26px; margin: 0; }
+.results .lead { color: var(--page-muted); margin: 0; max-width: 70ch; }
+.hyp-grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 14px; }
+.hyp { background: var(--page-card); border: 1px solid var(--page-line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.hyp .top { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.hyp .code { font-family: var(--display); font-weight: 800; font-size: 18px; }
+.hyp .val { font-family: var(--display); font-weight: 800; font-size: 34px; line-height: 1; font-variant-numeric: tabular-nums; }
+.hyp p { margin: 0; font-size: 13.5px; color: var(--page-muted); }
+.pill { font-size: 12px; font-weight: 800; border-radius: 999px; padding: 3px 10px; background: var(--page-chip); color: var(--page-muted); white-space: nowrap; }
+.pill.good { color: var(--page-good); }
+.pill.warn { color: var(--page-warn); }
+.table-wrap { overflow-x: auto; background: var(--page-card); border: 1px solid var(--page-line); border-radius: 14px; }
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--page-line); white-space: nowrap; }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--page-muted); }
+tr:last-child td { border-bottom: 0; }
+.empty { padding: 24px; color: var(--page-muted); }
+
+@media (max-width: 980px) {
+  .stage { grid-template-columns: minmax(0, 1fr); justify-items: center; }
+  .side { max-width: 560px; width: 100%; order: 2; }
+  .device { order: 1; position: relative; top: 0; }
+  .hyp-grid { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 560px) {
+  body { padding-left: 0; padding-right: 0; padding-block: 0; }
+  .stage { gap: 24px; }
+  .device { width: 100%; height: auto; min-height: 0; border-radius: 0; padding: 0; box-shadow: none; background: transparent; }
+  .app { border-radius: 0; min-height: 100vh; overflow: visible; }
+  .appbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 10; padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
+  .screen { overflow: visible; }
+  .sheet-wrap, .toast { position: fixed; }
+  .side, .results { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-bottom: 24px; }
+  .hyp-grid { grid-template-columns: minmax(0,1fr); }
+  body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 11; background: var(--navy); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .spinner { animation-duration: 3s; }
+  .bar > i { transition: none; }
+}
+</style>
+
+<div class="stage">
+  <aside class="side" id="side"></aside>
+  <div class="device">
+    <div class="app" id="app">
+      <header class="appbar">
+        <button class="icon-btn" id="backBtn" type="button" hidden></button>
+        <div class="title" id="appTitle">App Inventor Academy</div>
+        <div class="lang" role="group" aria-label="Language">
+          <button type="button" id="langEn" data-lang="en">EN</button>
+          <button type="button" id="langEs" data-lang="es">ES</button>
+        </div>
+      </header>
+      <main class="screen" id="screen" tabindex="-1"></main>
+      <div id="overlay"></div>
+      <div class="toast" id="toast" role="status" hidden></div>
+    </div>
+  </div>
+</div>
+<section class="results" id="results" hidden></section>
+
+<script>
+(() => {
+"use strict";
+
+/* ================= copy (EN default, ES extra) ================= */
+const STR = {
+  en: {
+    back: "Back", restartTest: "Restart test",
+    side_kicker: "Interactive MVP prototype",
+    side_title: "App Inventor Academy",
+    side_lead: "A teacher-training platform where educators learn MIT App Inventor, apply it with their students and earn a micro-credential backed by real classroom evidence.",
+    side_how: "How to test it",
+    side_steps: ["Explore the app as if you were a teacher.", "Think aloud: say what you expect before you tap.", "Go as far as you want. There are no wrong answers.", "At the end, leave quick feedback (1 minute)."],
+    side_rec_on: "Anonymous usage is being recorded to validate the prototype. We never store names, emails or passwords.",
+    side_rec_off: "Usage recording is off in this view. The prototype still works.",
+    side_case: "Built for the six hypotheses of the App Inventor Academy case: onboarding (H1–H3) and the micro-credential engine (H4–H6).",
+    screens: { welcome: "App Inventor Academy", register: "Create your account", dashboard: "My dashboard", module: "Module 1", activity: "Classroom activity", evidence: "Upload evidence", certificate: "My micro-credential", upgrade: "Plans", feedback: "Quick feedback" },
+    w_eyebrow: "Micro-credentials for teachers",
+    w_title: ["Teach programming.", "Certify it.", "Transform your career."],
+    w_sub: "Learn MIT App Inventor, take it to your classroom and earn a credential backed by real evidence.",
+    w_cta: "Start for free", w_note: "Module 1 is free · No credit card",
+    w_continue: "Continue as {name}",
+    w_proof: "of 51 surveyed teachers would join the free version",
+    w_countries: "Teachers from Colombia, Mexico and the Dominican Republic",
+    w_what: "What you get",
+    f: [["Learn by building", "Build your first app with MIT App Inventor in under 20 minutes."],
+        ["Take it to your classroom", "A ready-to-use activity for your next class."],
+        ["Verifiable micro-credential", "A certificate that names the exact competency you showed, ready for LinkedIn."]],
+    r_title: "Create your free account", r_time: "Less than 3 minutes", r_count: "{n} of 6 fields",
+    r_name: "Full name", r_name_ph: "Ana López",
+    r_email: "Email", r_email_ph: "ana@school.edu",
+    r_country: "Country", r_level: "Teaching level", r_area: "Main subject area",
+    r_pass: "Password", r_pass_hint: "At least 8 characters",
+    r_select: "Select…", r_submit: "Create my account",
+    r_privacy: "Prototype: what you type stays on this device. We only record anonymous usage, never your name, email or password.",
+    countries: ["Colombia", "Mexico", "Dominican Republic", "Other"],
+    levels: ["Higher education", "Basic / secondary education", "Technical training"],
+    areas: ["Science & math", "Technology & computing", "Languages & humanities", "Arts", "Other"],
+    e_name: "Enter your name.", e_email: "Enter a valid email, like ana@school.edu.", e_select: "Choose an option.", e_pass: "Use at least 8 characters.",
+    d_hi: "Hi, {name}!", d_welcome: "Welcome to App Inventor Academy.", d_reg: "You signed up in {s} seconds.",
+    d_next: "Your next step",
+    n_start: ["Module 1: Your first app for the classroom", "3 short steps · about 20 minutes · free", "Start Module 1"],
+    n_cont: ["Continue Module 1", "{n} of 3 steps done", "Continue Module 1"],
+    n_act: ["Take it to your classroom", "Choose your evidence and upload it in 3 steps.", "Go to the activity"],
+    n_cert: ["Your micro-credential is ready", "Share it on LinkedIn or unlock Module 2.", "View my certificate"],
+    d_path: "Recommended path",
+    path: ["Module 1 · Your first app", "Classroom activity", "Upload evidence", "Micro-credential", "Module 2 · Educator plan"],
+    st_done: "Done", st_next: "Next", st_pending: "Pending", st_locked: "Locked",
+    d_stats: ["Progress", "Steps done", "Credentials"], d_plans: "See plans",
+    m_eyebrow: "Module 1 · Free", m_title: "Your first app for the classroom", m_meta: "3 steps · 20 min · Beginner",
+    m_outcome: "You will finish with a working app and a one-page plan to use it with your students.",
+    m_start: "Start Module 1", m_locked: "Start the module to open the steps.",
+    m_progress: "{n} of 3 steps", m_done: "Mark as done", m_is_done: "Done", m_next: "Go to the classroom activity",
+    m_result: "Expected result",
+    steps: [
+      { t: "Discover MIT App Inventor", time: "5 min", res: "You know the Designer and Blocks editors.",
+        body: "App Inventor has two views. In the <b>Designer</b> you place buttons, labels and images on the phone screen. In <b>Blocks</b> you snap instructions together like puzzle pieces. Open ai2.appinventor.mit.edu and create a project called HelloClass." },
+      { t: "Build the “Hello, class!” app", time: "10 min", res: "A working app on your phone.",
+        list: ["Drag a Button and a Label onto Screen1.", "In Blocks, add “when Button1.Click”.", "Inside it, set Label1.Text to “Hello, class!”.", "Scan the QR code with the MIT AI2 Companion app to try it on your phone."] },
+      { t: "Plan it for your class", time: "5 min", res: "A one-page plan for your next class.",
+        body: "Pick what your students will build next class:", options: ["Quiz", "Counter", "Flashcards"] },
+    ],
+    a_eyebrow: "Classroom activity", a_title: "Your mission: take it to your classroom",
+    a_sub: "Use your app with your students this week. Then show us it happened.",
+    a_choose: "How will you show it?",
+    ev: [["Photo of your class", "Students working with the app. No faces needed."],
+         ["Screenshot of a student app", "A screen from an app your students built."],
+         ["Short video", "Up to 1 minute of the activity."]],
+    a_examples: "What other teachers did",
+    ex: [["María G.", "Secondary · Bogotá, Colombia", "Her 9th graders built an ecosystems quiz and played it in teams.", "Photo"],
+         ["Luis R.", "CONALEP · Monterrey, Mexico", "His students made a unit converter for the workshop.", "Screenshot"],
+         ["Ana P.", "University · Santo Domingo, Dominican Republic", "Her future teachers designed flashcard apps for children.", "Video"]],
+    a_cta: "Upload my evidence", a_pick: "Choose one option to continue.",
+    v_head: "You will complete 100% of Module 1", v_step: "Step {n} of 3",
+    v_names: ["File", "Description", "Context"],
+    v1_t: "Add your file", v1_d: "{type} · JPG, PNG or MP4", v1_btn: "Choose a file", v1_change: "Change file", v1_none: "No file selected yet",
+    v1_note: "Prototype: the file stays on your device and is not uploaded.",
+    v2_t: "What happened in class?", v2_ph: "Example: My students built a quiz about ecosystems and tested it in pairs.", v2_hint: "At least 30 characters · {n}/30",
+    v3_t: "Add the context", v_grade: "Grade or group", v_grade_ph: "9th grade, group B", v_students: "Number of students", v_students_ph: "28",
+    v_subject: "Subject", v_subject_ph: "Biology", v_date: "Date of the class",
+    v_next: "Next", v_submit: "Submit evidence", v_verifying: "Verifying your evidence…", v_verifying_d: "Checking it against the Module 1 criteria.",
+    e_file: "Add a file to continue.", e_desc: "Write at least 30 characters.", e_grade: "Enter the grade or group.", e_students: "Enter the number of students.", e_date: "Choose the date.",
+    c_verified: "Evidence verified", c_verified_d: "Reviewed against the Module 1 criteria.",
+    c_brand: "APP INVENTOR ACADEMY", c_level: "Micro-credential · Level 1", c_certifies: "This certifies that",
+    c_demo: "has demonstrated the competency",
+    c_comp: "Designs and implements a mobile app with MIT App Inventor as a learning activity, applied with real students in the classroom.",
+    c_evidence: "Evidence: {type} · {grade} · {students} students · {subject}",
+    c_meta: "Issued {date} · Credential ID {id}",
+    c_share: "Share on LinkedIn", c_download: "Download certificate", c_next: "Unlock Module 2",
+    sh_title: "Your LinkedIn post",
+    sh_post: "I just earned the App Inventor Academy micro-credential (Level 1).\n\nCompetency demonstrated: {comp}\n\nVerified with real classroom evidence · Credential ID {id}\n#AppInventor #EdTech #Teachers",
+    sh_q: "Would you share it as it is written?", sh_yes: "Yes, as written", sh_no: "I would change it",
+    sh_copy: "Copy text", sh_open: "Open LinkedIn", sh_copied: "Post text copied.", sh_copy_fail: "Select the text and copy it.", sh_close: "Close",
+    dl_ok: "Certificate saved.", dl_no: "Downloads are not available in this view.",
+    u_head: "Keep growing", u_progress: "{n} of 3 modules completed",
+    mods: ["Module 1 · Your first app for the classroom", "Module 2 · Gamify your class with apps", "Module 3 · Assess learning with data apps"],
+    u_needs: "Educator plan", u_plans: "Choose your plan",
+    plans: [
+      { n: "Free", p: "$0", per: "", f: ["Module 1", "1 verifiable micro-credential", "Examples from other teachers"], b: "Your current plan" },
+      { n: "Educator", p: "$12", per: "USD / month", tag: "For individual teachers", f: ["Modules 1, 2 and 3", "Unlimited micro-credentials", "LinkedIn-ready certificates", "Library of classroom activities"], b: "Choose Educator" },
+      { n: "Institutional", p: "From $8", per: "USD / teacher / month", f: ["Everything in Educator", "Licenses for your whole school", "Progress reports for coordinators", "For universities, SENA, CONALEP and INFOTEP"], b: "Request a quote" },
+    ],
+    pm_edu: "Thanks for your interest! This is a prototype, so no payment is processed. The Educator plan costs $12 USD per month and unlocks Modules 2 and 3.",
+    pm_inst: "Thanks! Institutional licenses start at $8 USD per teacher per month. In the real product our team would contact your institution. This prototype sends no data.",
+    pm_ok: "Got it", u_feedback: "Give quick feedback (1 min)",
+    fb_title: "Quick feedback", fb_lead: "Four questions about your experience. Answers are anonymous.",
+    q1: "Would you use what you learned in Module 1 in your next class?", q1o: ["Yes", "Maybe", "No"],
+    q2: "How easy was it to upload your evidence?", q2l: ["Very hard", "Very easy"],
+    q3: "Would you pay for Educator or ask your institution for it?", q3o: ["I would pay", "My institution", "Not now"],
+    q4: "Was anything confusing? (optional)", q4_ph: "Tell us what you expected to happen.",
+    fb_send: "Send feedback", fb_need: "Answer the first three questions to send.",
+    fb_thanks: "Thank you!", fb_thanks_d: "Your answers help us improve App Inventor Academy.", fb_restart: "Start a new test",
+    res_title: "Validation results", res_lead: "Only people who can edit this page see this panel. Each row is one anonymous test session. The targets come from the case indicators; H2 and H6 also need what you observe aloud in the session.",
+    res_n: "{n} sessions", res_export: "Export CSV", res_none: "No test sessions yet. Share this page with teachers and their sessions will appear here.",
+    pill_ok: "Meets target", pill_low: "Below target", pill_wait: "Not enough data",
+    hyp: [
+      ["H1", "Registered in under 3 minutes", "Target: more than 80%"],
+      ["H2", "Tapped the next step within 60 s of reaching the dashboard", "Proxy: confirm aloud in the session"],
+      ["H3", "Would use Module 1 in their next class", "Target: more than 70%"],
+      ["H4", "Completed the evidence upload after starting it", "Target: more than 75%"],
+      ["H5", "Would share the certificate as written", "Target: more than 60%"],
+      ["H6", "Opened a paid plan after seeing Module 2 locked", "Target: more than 40%"],
+    ],
+    cols: ["Started", "Lang", "Furthest", "Sign-up (s)", "Next step (s)", "Steps", "Evidence", "Share as written", "Paid plan", "Use in class", "Evidence ease", "Would pay", "Comment"],
+    yes: "Yes", no: "No",
+  },
+  es: {
+    back: "Atrás", restartTest: "Reiniciar prueba",
+    side_kicker: "Prototipo MVP interactivo",
+    side_title: "App Inventor Academy",
+    side_lead: "Una plataforma de formación docente donde los educadores aprenden MIT App Inventor, lo aplican con sus estudiantes y obtienen una microcredencial respaldada por evidencia real de aula.",
+    side_how: "Cómo probarlo",
+    side_steps: ["Explora la app como si fueras docente.", "Piensa en voz alta: di qué esperas antes de tocar.", "Avanza hasta donde quieras. No hay respuestas incorrectas.", "Al final, deja tu opinión rápida (1 minuto)."],
+    side_rec_on: "Se registra el uso anónimo para validar el prototipo. Nunca guardamos nombres, correos ni contraseñas.",
+    side_rec_off: "El registro de uso está apagado en esta vista. El prototipo funciona igual.",
+    side_case: "Construido para las seis hipótesis del caso App Inventor Academy: onboarding (H1–H3) y motor de microcredenciales (H4–H6).",
+    screens: { welcome: "App Inventor Academy", register: "Crea tu cuenta", dashboard: "Mi panel", module: "Módulo 1", activity: "Actividad de aula", evidence: "Subir evidencia", certificate: "Mi microcredencial", upgrade: "Planes", feedback: "Opinión rápida" },
+    w_eyebrow: "Microcredenciales para docentes",
+    w_title: ["Enseña programación.", "Certifícalo.", "Transforma tu carrera."],
+    w_sub: "Aprende MIT App Inventor, llévalo a tu aula y obtén una credencial respaldada por evidencia real.",
+    w_cta: "Comienza gratis", w_note: "Módulo 1 gratis · Sin tarjeta",
+    w_continue: "Continuar como {name}",
+    w_proof: "de 51 docentes encuestados participaría en la versión gratuita",
+    w_countries: "Docentes de Colombia, México y República Dominicana",
+    w_what: "Lo que obtienes",
+    f: [["Aprende construyendo", "Crea tu primera app con MIT App Inventor en menos de 20 minutos."],
+        ["Llévalo a tu aula", "Una actividad lista para usar en tu próxima clase."],
+        ["Microcredencial verificable", "Un certificado que nombra la competencia exacta que demostraste, listo para LinkedIn."]],
+    r_title: "Crea tu cuenta gratis", r_time: "Menos de 3 minutos", r_count: "{n} de 6 campos",
+    r_name: "Nombre completo", r_name_ph: "Ana López",
+    r_email: "Correo electrónico", r_email_ph: "ana@escuela.edu",
+    r_country: "País", r_level: "Nivel en el que enseñas", r_area: "Área principal",
+    r_pass: "Contraseña", r_pass_hint: "Mínimo 8 caracteres",
+    r_select: "Selecciona…", r_submit: "Crear mi cuenta",
+    r_privacy: "Prototipo: lo que escribes se queda en este dispositivo. Solo registramos uso anónimo, nunca tu nombre, correo ni contraseña.",
+    countries: ["Colombia", "México", "República Dominicana", "Otro"],
+    levels: ["Educación superior", "Educación básica / secundaria", "Formación técnica"],
+    areas: ["Ciencias y matemáticas", "Tecnología e informática", "Lenguas y humanidades", "Artes", "Otra"],
+    e_name: "Escribe tu nombre.", e_email: "Escribe un correo válido, como ana@escuela.edu.", e_select: "Elige una opción.", e_pass: "Usa al menos 8 caracteres.",
+    d_hi: "¡Hola, {name}!", d_welcome: "Te damos la bienvenida a App Inventor Academy.", d_reg: "Te registraste en {s} segundos.",
+    d_next: "Tu siguiente paso",
+    n_start: ["Módulo 1: Tu primera app para el aula", "3 pasos cortos · unos 20 minutos · gratis", "Empezar Módulo 1"],
+    n_cont: ["Continúa el Módulo 1", "{n} de 3 pasos hechos", "Continuar Módulo 1"],
+    n_act: ["Llévalo a tu aula", "Elige tu evidencia y súbela en 3 pasos.", "Ir a la actividad"],
+    n_cert: ["Tu microcredencial está lista", "Compártela en LinkedIn o desbloquea el Módulo 2.", "Ver mi certificado"],
+    d_path: "Ruta recomendada",
+    path: ["Módulo 1 · Tu primera app", "Actividad de aula", "Subir evidencia", "Microcredencial", "Módulo 2 · Plan Educator"],
+    st_done: "Hecho", st_next: "Siguiente", st_pending: "Pendiente", st_locked: "Bloqueado",
+    d_stats: ["Avance", "Pasos hechos", "Credenciales"], d_plans: "Ver planes",
+    m_eyebrow: "Módulo 1 · Gratis", m_title: "Tu primera app para el aula", m_meta: "3 pasos · 20 min · Principiante",
+    m_outcome: "Terminarás con una app funcionando y un plan de una página para usarla con tus estudiantes.",
+    m_start: "Empezar Módulo 1", m_locked: "Empieza el módulo para abrir los pasos.",
+    m_progress: "{n} de 3 pasos", m_done: "Marcar como hecho", m_is_done: "Hecho", m_next: "Ir a la actividad de aula",
+    m_result: "Resultado esperado",
+    steps: [
+      { t: "Descubre MIT App Inventor", time: "5 min", res: "Conoces los editores Diseñador y Bloques.",
+        body: "App Inventor tiene dos vistas. En el <b>Diseñador</b> colocas botones, etiquetas e imágenes en la pantalla del teléfono. En <b>Bloques</b> unes instrucciones como piezas de rompecabezas. Entra a ai2.appinventor.mit.edu y crea un proyecto llamado HelloClass." },
+      { t: "Construye la app “¡Hola, clase!”", time: "10 min", res: "Una app funcionando en tu teléfono.",
+        list: ["Arrastra un Botón y una Etiqueta a Screen1.", "En Bloques, agrega “cuando Button1.Click”.", "Dentro, pon Label1.Text en “¡Hola, clase!”.", "Escanea el código QR con la app MIT AI2 Companion para probarla en tu teléfono."] },
+      { t: "Planéalo para tu clase", time: "5 min", res: "Un plan de una página para tu próxima clase.",
+        body: "Elige qué construirán tus estudiantes la próxima clase:", options: ["Quiz", "Contador", "Tarjetas"] },
+    ],
+    a_eyebrow: "Actividad de aula", a_title: "Tu misión: llévatelo al aula",
+    a_sub: "Usa tu app con tus estudiantes esta semana. Después muéstranos que sucedió.",
+    a_choose: "¿Cómo lo vas a mostrar?",
+    ev: [["Foto de tu clase", "Estudiantes usando la app. No hace falta mostrar rostros."],
+         ["Captura de una app de un estudiante", "Una pantalla de una app que hicieron tus estudiantes."],
+         ["Video corto", "Hasta 1 minuto de la actividad."]],
+    a_examples: "Lo que hicieron otros docentes",
+    ex: [["María G.", "Secundaria · Bogotá, Colombia", "Sus alumnos de 9.º crearon un quiz de ecosistemas y lo jugaron en equipos.", "Foto"],
+         ["Luis R.", "CONALEP · Monterrey, México", "Sus estudiantes hicieron un conversor de unidades para el taller.", "Captura"],
+         ["Ana P.", "Universidad · Santo Domingo, República Dominicana", "Sus futuros docentes diseñaron apps de tarjetas para niños.", "Video"]],
+    a_cta: "Subir mi evidencia", a_pick: "Elige una opción para continuar.",
+    v_head: "Completarás el 100% del Módulo 1", v_step: "Paso {n} de 3",
+    v_names: ["Archivo", "Descripción", "Contexto"],
+    v1_t: "Agrega tu archivo", v1_d: "{type} · JPG, PNG o MP4", v1_btn: "Elegir un archivo", v1_change: "Cambiar archivo", v1_none: "Aún no eliges un archivo",
+    v1_note: "Prototipo: el archivo se queda en tu dispositivo y no se sube.",
+    v2_t: "¿Qué pasó en clase?", v2_ph: "Ejemplo: Mis estudiantes crearon un quiz sobre ecosistemas y lo probaron en parejas.", v2_hint: "Mínimo 30 caracteres · {n}/30",
+    v3_t: "Agrega el contexto", v_grade: "Grado o grupo", v_grade_ph: "9.º grado, grupo B", v_students: "Número de estudiantes", v_students_ph: "28",
+    v_subject: "Materia", v_subject_ph: "Biología", v_date: "Fecha de la clase",
+    v_next: "Siguiente", v_submit: "Enviar evidencia", v_verifying: "Verificando tu evidencia…", v_verifying_d: "Revisándola con los criterios del Módulo 1.",
+    e_file: "Agrega un archivo para continuar.", e_desc: "Escribe al menos 30 caracteres.", e_grade: "Escribe el grado o grupo.", e_students: "Escribe el número de estudiantes.", e_date: "Elige la fecha.",
+    c_verified: "Evidencia verificada", c_verified_d: "Revisada con los criterios del Módulo 1.",
+    c_brand: "APP INVENTOR ACADEMY", c_level: "Microcredencial · Nivel 1", c_certifies: "Se certifica que",
+    c_demo: "demostró la competencia",
+    c_comp: "Diseña e implementa una app móvil con MIT App Inventor como actividad de aprendizaje, aplicada con estudiantes reales en el aula.",
+    c_evidence: "Evidencia: {type} · {grade} · {students} estudiantes · {subject}",
+    c_meta: "Emitido el {date} · ID de credencial {id}",
+    c_share: "Compartir en LinkedIn", c_download: "Descargar certificado", c_next: "Desbloquear Módulo 2",
+    sh_title: "Tu publicación en LinkedIn",
+    sh_post: "Acabo de obtener la microcredencial de App Inventor Academy (Nivel 1).\n\nCompetencia demostrada: {comp}\n\nVerificada con evidencia real de aula · ID de credencial {id}\n#AppInventor #EdTech #Docentes",
+    sh_q: "¿La compartirías tal como está redactada?", sh_yes: "Sí, tal como está", sh_no: "La cambiaría",
+    sh_copy: "Copiar texto", sh_open: "Abrir LinkedIn", sh_copied: "Texto copiado.", sh_copy_fail: "Selecciona el texto y cópialo.", sh_close: "Cerrar",
+    dl_ok: "Certificado guardado.", dl_no: "Las descargas no están disponibles en esta vista.",
+    u_head: "Sigue creciendo", u_progress: "{n} de 3 módulos completados",
+    mods: ["Módulo 1 · Tu primera app para el aula", "Módulo 2 · Gamifica tu clase con apps", "Módulo 3 · Evalúa el aprendizaje con apps de datos"],
+    u_needs: "Plan Educator", u_plans: "Elige tu plan",
+    plans: [
+      { n: "Gratuito", p: "$0", per: "", f: ["Módulo 1", "1 microcredencial verificable", "Ejemplos de otros docentes"], b: "Tu plan actual" },
+      { n: "Educator", p: "$12", per: "USD / mes", tag: "Para docentes individuales", f: ["Módulos 1, 2 y 3", "Microcredenciales ilimitadas", "Certificados listos para LinkedIn", "Biblioteca de actividades de aula"], b: "Elegir Educator" },
+      { n: "Institucional", p: "Desde $8", per: "USD / docente / mes", f: ["Todo lo de Educator", "Licencias para toda tu escuela", "Reportes de avance para coordinadores", "Para universidades, SENA, CONALEP e INFOTEP"], b: "Solicitar cotización" },
+    ],
+    pm_edu: "¡Gracias por tu interés! Es un prototipo, así que no se procesa ningún pago. El plan Educator cuesta $12 USD al mes y desbloquea los Módulos 2 y 3.",
+    pm_inst: "¡Gracias! Las licencias institucionales inician en $8 USD por docente al mes. En el producto real nuestro equipo contactaría a tu institución. Este prototipo no envía datos.",
+    pm_ok: "Entendido", u_feedback: "Danos tu opinión (1 min)",
+    fb_title: "Opinión rápida", fb_lead: "Cuatro preguntas sobre tu experiencia. Las respuestas son anónimas.",
+    q1: "¿Usarías lo que aprendiste en el Módulo 1 en tu próxima clase?", q1o: ["Sí", "Tal vez", "No"],
+    q2: "¿Qué tan fácil fue subir tu evidencia?", q2l: ["Muy difícil", "Muy fácil"],
+    q3: "¿Pagarías Educator o se lo pedirías a tu institución?", q3o: ["Lo pagaría", "Mi institución", "Por ahora no"],
+    q4: "¿Algo te confundió? (opcional)", q4_ph: "Cuéntanos qué esperabas que pasara.",
+    fb_send: "Enviar opinión", fb_need: "Responde las tres primeras preguntas para enviar.",
+    fb_thanks: "¡Gracias!", fb_thanks_d: "Tus respuestas nos ayudan a mejorar App Inventor Academy.", fb_restart: "Iniciar una nueva prueba",
+    res_title: "Resultados de validación", res_lead: "Solo quienes pueden editar esta página ven este panel. Cada fila es una sesión de prueba anónima. Las metas vienen de los indicadores del caso; H2 y H6 también requieren lo que observes en voz alta durante la sesión.",
+    res_n: "{n} sesiones", res_export: "Exportar CSV", res_none: "Aún no hay sesiones de prueba. Comparte esta página con docentes y sus sesiones aparecerán aquí.",
+    pill_ok: "Cumple la meta", pill_low: "Debajo de la meta", pill_wait: "Faltan datos",
+    hyp: [
+      ["H1", "Se registró en menos de 3 minutos", "Meta: más del 80%"],
+      ["H2", "Tocó el siguiente paso en menos de 60 s al llegar al panel", "Aproximación: confírmalo en voz alta en la sesión"],
+      ["H3", "Usaría el Módulo 1 en su próxima clase", "Meta: más del 70%"],
+      ["H4", "Completó la carga de evidencia después de iniciarla", "Meta: más del 75%"],
+      ["H5", "Compartiría el certificado tal como está", "Meta: más del 60%"],
+      ["H6", "Abrió un plan de pago tras ver el Módulo 2 bloqueado", "Meta: más del 40%"],
+    ],
+    cols: ["Inicio", "Idioma", "Llegó a", "Registro (s)", "Sig. paso (s)", "Pasos", "Evidencia", "Compartiría", "Plan de pago", "Usaría en clase", "Facilidad evid.", "Pagaría", "Comentario"],
+    yes: "Sí", no: "No",
+  },
+};
+
+/* ================= icons ================= */
+const ICON = {
+  back: '<path d="M15 18l-6-6 6-6"/>',
+  check: '<path d="M5 12.5l4.5 4.5L19 7.5"/>',
+  lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  phone: '<rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/>',
+  school: '<path d="M3 10l9-5 9 5-9 5-9-5z"/><path d="M7 12.5V17c3 2 7 2 10 0v-4.5"/>',
+  badge: '<circle cx="12" cy="9" r="6"/><path d="M8.5 14l-1.5 7 5-3 5 3-1.5-7"/>',
+  camera: '<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  screen: '<rect x="3" y="4" width="18" height="13" rx="2"/><path d="M9 21h6M12 17v4"/>',
+  video: '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/>',
+  upload: '<path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v4h16v-4"/>',
+  download: '<path d="M12 4v12M7 11l5 5 5-5"/><path d="M4 20h16"/>',
+  arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  chev: '<path d="M9 6l6 6-6 6"/>',
+  chevDown: '<path d="M6 9l6 6 6-6"/>',
+};
+const ico = (n, cls = "svg") => `<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICON[n]}</svg>`;
+
+/* ================= state ================= */
+const KEY = "aia-prototype-v1";
+const RANK = { welcome: 1, register: 2, dashboard: 3, module: 4, activity: 5, evidence: 6, certificate: 7, upgrade: 8, feedback: 9 };
+const fresh = () => ({
+  lang: "en", screen: "welcome", history: [],
+  form: { name: "", email: "", country: "", level: "", area: "", password: "" }, errors: {},
+  user: null, regStart: null,
+  moduleStarted: false, steps: [false, false, false], openStep: 0, planChoice: null,
+  evType: null, evStep: 1, ev: { fileName: "", preview: "", desc: "", grade: "", students: "", subject: "", date: "" }, evErrors: {},
+  cert: null, fb: { q1: null, q2: null, q3: null, q4: "" }, fbSent: false, dashArrive: null,
+  m: newMetrics(),
+});
+function newMetrics() {
+  return {
+    id: "s" + Date.now().toString(36) + Math.random().toString(36).slice(2, 7),
+    startedAt: new Date().toISOString(), lang: "en", device: window.innerWidth < 560 ? "phone" : "desktop",
+    started: false, furthest: "welcome", path: [],
+    registered: false, registerSeconds: null, dashboardActionSeconds: null,
+    profile: null, stepsDone: 0, evidenceType: null, evidenceStarted: false, evidenceStep: 0, evidenceCompleted: false,
+    certificateViewed: false, shareOpened: false, shareAsWritten: null, downloadClicked: false,
+    upgradeViewed: false, educatorClicked: false, institutionalClicked: false,
+    survey: null, updatedAt: null,
+  };
+}
+let S = load() || fresh();
+S.verifying = false;
+function load() {
+  try { const raw = localStorage.getItem(KEY); return raw ? Object.assign(fresh(), JSON.parse(raw)) : null; } catch { return null; }
+}
+function persist() {
+  try { const copy = { ...S, ev: { ...S.ev, preview: "" } }; localStorage.setItem(KEY, JSON.stringify(copy)); } catch {}
+}
+const L = () => STR[S.lang];
+const fmt = (s, v = {}) => String(s).replace(/\{(\w+)\}/g, (_, k) => v[k] ?? "");
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const firstName = () => (S.user?.name || "").trim().split(/\s+/)[0] || "";
+const stepsDone = () => S.steps.filter(Boolean).length;
+const progressPct = () => Math.round(stepsDone() * 20 + (S.cert ? 40 : 0));
+
+/* ================= anonymous metrics (db) ================= */
+let db = null, saveTimer = null, recording = false;
+function track(patch) {
+  Object.assign(S.m, patch);
+  if (!S.m.started) return;
+  S.m.updatedAt = new Date().toISOString();
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(flush, 700);
+}
+function flush() {
+  if (!db || !S.m.started) return;
+  db.collection("sessions").doc(S.m.id).set(JSON.parse(JSON.stringify(S.m))).catch(() => {});
+}
+function visit(screen) {
+  const m = S.m;
+  if (RANK[screen] > RANK[m.furthest]) m.furthest = screen;
+  if (m.path[m.path.length - 1] !== screen && m.path.length < 80) m.path.push(screen);
+  track({});
+}
+
+/* ================= navigation ================= */
+const $ = sel => document.querySelector(sel);
+const screenEl = $("#screen");
+function go(screen, { replace = false } = {}) {
+  if (!replace && S.screen !== screen) S.history.push(S.screen);
+  S.screen = screen;
+  if (screen === "dashboard" && S.dashArrive == null) S.dashArrive = Date.now();
+  if (screen === "register" && !S.regStart) S.regStart = Date.now();
+  if (screen === "certificate") track({ certificateViewed: true });
+  if (screen === "upgrade") track({ upgradeViewed: true });
+  visit(screen);
+  render(true);
+}
+function back() {
+  const prev = S.history.pop();
+  if (prev) { S.screen = prev; render(true); }
+}
+
+/* ================= screens ================= */
+const V = {};
+
+V.welcome = () => {
+  const t = L();
+  return `
+  <section class="hero">
+    <p class="eyebrow">${t.w_eyebrow}</p>
+    <h2>${t.w_title.map(x => `<span>${x}</span>`).join("")}</h2>
+    <p>${t.w_sub}</p>
+    <button class="cta" data-act="start">${t.w_cta} ${ico("arrow")}</button>
+    ${S.user ? `<button class="cta secondary" data-go="dashboard">${esc(fmt(t.w_continue, { name: firstName() }))}</button>` : ""}
+    <p class="note">${t.w_note}</p>
+  </section>
+  <div class="pad">
+    <div class="card">
+      <div class="proof"><span class="big">96%</span><p><b>${t.w_proof}</b></p></div>
+      <p class="muted small">${t.w_countries}</p>
+    </div>
+    <h3 class="h">${t.w_what}</h3>
+    ${t.f.map((f, i) => `
+      <div class="card feature">
+        <span class="ico">${ico(["phone", "school", "badge"][i])}</span>
+        <div><h3 class="h">${f[0]}</h3><p class="muted small">${f[1]}</p></div>
+      </div>`).join("")}
+  </div>`;
+};
+
+V.register = () => {
+  const t = L(), f = S.form, e = S.errors;
+  const sel = (id, label, opts) => `
+    <div class="field ${e[id] ? "err" : ""}">
+      <label for="f-${id}">${label}</label>
+      <select id="f-${id}" data-field="${id}">
+        <option value="">${t.r_select}</option>
+        ${opts.map((o, i) => `<option value="${i}" ${String(f[id]) === String(i) ? "selected" : ""}>${o}</option>`).join("")}
+      </select>
+      ${e[id] ? `<span class="msg">${e[id]}</span>` : ""}
+    </div>`;
+  const inp = (id, label, type, ph, hint) => `
+    <div class="field ${e[id] ? "err" : ""}">
+      <label for="f-${id}">${label}</label>
+      <input id="f-${id}" data-field="${id}" type="${type}" placeholder="${esc(ph || "")}" value="${esc(f[id])}" ${type === "email" ? 'inputmode="email" autocomplete="off"' : ""} ${type === "password" ? 'autocomplete="new-password"' : ""}>
+      ${e[id] ? `<span class="msg">${e[id]}</span>` : hint ? `<span class="hint">${hint}</span>` : ""}
+    </div>`;
+  return `
+  <form class="pad" id="regForm" novalidate>
+    <h2 class="h">${t.r_title}</h2>
+    <div class="timebox"><strong>${ico("clock")} ${t.r_time}</strong><span class="small muted" id="regCount">${fmt(t.r_count, { n: filled() })}</span></div>
+    ${inp("name", t.r_name, "text", t.r_name_ph)}
+    ${inp("email", t.r_email, "email", t.r_email_ph)}
+    ${sel("country", t.r_country, t.countries)}
+    ${sel("level", t.r_level, t.levels)}
+    ${sel("area", t.r_area, t.areas)}
+    ${inp("password", t.r_pass, "password", "", t.r_pass_hint)}
+    <button class="cta" type="submit">${t.r_submit}</button>
+    <p class="privacy">${t.r_privacy}</p>
+  </form>`;
+};
+function filled() {
+  const f = S.form;
+  return ["name", "email", "country", "level", "area", "password"].filter(k => String(f[k]).trim() !== "").length;
+}
+
+function nextStep() {
+  if (S.cert) return ["n_cert", "certificate"];
+  if (stepsDone() === 3) return ["n_act", "activity"];
+  if (stepsDone() > 0) return ["n_cont", "module"];
+  return ["n_start", "module"];
+}
+V.dashboard = () => {
+  const t = L(), [k] = nextStep(), n = t[k], done = stepsDone();
+  const states = [
+    done === 3 ? "done" : "now",
+    S.cert ? "done" : done === 3 ? "now" : "pending",
+    S.cert ? "done" : "pending",
+    S.cert ? "done" : "pending",
+    "locked",
+  ];
+  const label = { done: t.st_done, now: t.st_next, pending: t.st_pending, locked: t.st_locked };
+  const chip = { done: "green", now: "amber", pending: "lock", locked: "lock" };
+  return `
+  <section class="greet">
+    <h2>${esc(fmt(t.d_hi, { name: firstName() }))}</h2>
+    <p>${t.d_welcome}</p>
+    ${S.m.registerSeconds != null ? `<p class="small">${fmt(t.d_reg, { s: S.m.registerSeconds })}</p>` : ""}
+  </section>
+  <div class="pad">
+    <div class="next">
+      <p class="eyebrow">${t.d_next}</p>
+      <h3 class="h">${n[0]}</h3>
+      <p class="small">${fmt(n[1], { n: done })}</p>
+      <button class="cta" data-act="nextStep">${n[2]} ${ico("arrow")}</button>
+    </div>
+    <div class="card">
+      <h3 class="h">${t.d_path}</h3>
+      <ol class="path">
+        ${t.path.map((p, i) => `
+          <li>
+            <span class="dot ${states[i]}">${states[i] === "done" ? ico("check") : states[i] === "locked" ? ico("lock") : i + 1}</span>
+            <span>${p}</span>
+            <span class="chip ${chip[states[i]]}">${label[states[i]]}</span>
+          </li>`).join("")}
+      </ol>
+    </div>
+    <div class="stats">
+      <div class="stat"><b>${progressPct()}%</b><span>${t.d_stats[0]}</span></div>
+      <div class="stat"><b>${done}/3</b><span>${t.d_stats[1]}</span></div>
+      <div class="stat"><b>${S.cert ? 1 : 0}</b><span>${t.d_stats[2]}</span></div>
+    </div>
+    <button class="cta secondary" data-go="upgrade">${t.d_plans}</button>
+  </div>`;
+};
+
+V.module = () => {
+  const t = L(), done = stepsDone();
+  return `
+  <section class="mod-head">
+    <p class="eyebrow">${t.m_eyebrow}</p>
+    <h2>${t.m_title}</h2>
+    <p>${ico("clock")} ${t.m_meta}</p>
+  </section>
+  <div class="pad">
+    <p class="muted">${t.m_outcome}</p>
+    ${S.moduleStarted ? `
+      <div class="field"><span class="small"><b>${fmt(t.m_progress, { n: done })}</b></span><div class="bar"><i style="width:${Math.round(done / 3 * 100)}%"></i></div></div>`
+      : `<button class="cta" data-act="startModule">${t.m_start}</button><p class="small muted">${t.m_locked}</p>`}
+    ${t.steps.map((s, i) => {
+      const isDone = S.steps[i], open = S.moduleStarted && S.openStep === i;
+      return `
+      <div class="step ${isDone ? "is-done" : ""}">
+        <button class="step-head" data-act="toggleStep" data-i="${i}" ${S.moduleStarted ? "" : "disabled"} aria-expanded="${open}">
+          <span class="dot ${isDone ? "done" : ""}">${isDone ? ico("check") : i + 1}</span>
+          <span>
+            <span class="st-title">${s.t}</span>
+            <span class="step-meta"><span>${ico("clock")} ${s.time}</span></span>
+            <span class="result">${t.m_result}: ${s.res}</span>
+          </span>
+          <span class="muted">${S.moduleStarted ? ico(open ? "chevDown" : "chev") : ico("lock")}</span>
+        </button>
+        ${open ? `
+        <div class="step-body">
+          ${s.body ? `<p>${s.body}</p>` : ""}
+          ${s.list ? `<ol>${s.list.map(x => `<li>${x}</li>`).join("")}</ol>` : ""}
+          ${s.options ? `<div class="choices">${s.options.map((o, j) => `<button class="choice" data-act="plan" data-j="${j}" aria-pressed="${S.planChoice === j}">${o}</button>`).join("")}</div>` : ""}
+          <button class="done-btn ${isDone ? "on" : ""}" data-act="markStep" data-i="${i}">${ico("check")} ${isDone ? t.m_is_done : t.m_done}</button>
+        </div>` : ""}
+      </div>`;
+    }).join("")}
+    <button class="cta" data-go="activity" ${done === 3 ? "" : "disabled"}>${t.m_next} ${ico("arrow")}</button>
+  </div>`;
+};
+
+V.activity = () => {
+  const t = L();
+  return `
+  <section class="mission">
+    <p class="eyebrow">${t.a_eyebrow}</p>
+    <h2>${t.a_title}</h2>
+    <p>${t.a_sub}</p>
+  </section>
+  <div class="pad">
+    <h3 class="h">${t.a_choose}</h3>
+    ${t.ev.map((e, i) => `
+      <button class="ev-opt" data-act="evType" data-i="${i}" aria-pressed="${S.evType === i}">
+        <span class="ico">${ico(["camera", "screen", "video"][i])}</span>
+        <span><b>${e[0]}</b><br><span class="small muted">${e[1]}</span></span>
+        <span class="radio">${S.evType === i ? ico("check") : ""}</span>
+      </button>`).join("")}
+    <h3 class="h">${t.a_examples}</h3>
+    ${t.ex.map(x => `
+      <div class="card example">
+        <span class="avatar">${x[0].split(" ").map(w => w[0]).join("")}</span>
+        <div><b>${x[0]}</b> <span class="chip lock">${x[3]}</span><p class="small muted">${x[1]}</p><p class="small">${x[2]}</p></div>
+      </div>`).join("")}
+    <button class="cta" data-act="toEvidence" ${S.evType == null ? "disabled" : ""}>${t.a_cta} ${ico("upload")}</button>
+    ${S.evType == null ? `<p class="small muted">${t.a_pick}</p>` : ""}
+  </div>`;
+};
+
+V.evidence = () => {
+  const t = L(), n = S.evStep, ev = S.ev, e = S.evErrors;
+  if (S.verifying) return `
+    <div class="verifying"><div class="spinner" aria-hidden="true"></div><h2 class="h">${t.v_verifying}</h2><p class="muted">${t.v_verifying_d}</p></div>`;
+  const typeName = t.ev[S.evType ?? 0][0];
+  const field = (id, label, type, ph, extra = "") => `
+    <div class="field ${e[id] ? "err" : ""}">
+      <label for="v-${id}">${label}</label>
+      <input id="v-${id}" data-ev="${id}" type="${type}" placeholder="${esc(ph || "")}" value="${esc(ev[id])}" ${extra}>
+      ${e[id] ? `<span class="msg">${e[id]}</span>` : ""}
+    </div>`;
+  let body = "";
+  if (n === 1) body = `
+    <h3 class="h">${t.v1_t}</h3>
+    <p class="small muted">${fmt(t.v1_d, { type: typeName })}</p>
+    <div class="drop">
+      ${ev.preview ? `<img src="${ev.preview}" alt="">` : `<span class="muted">${ico("upload", "svg")}</span>`}
+      <span class="${ev.fileName ? "file-name" : "muted small"}">${ev.fileName ? esc(ev.fileName) : t.v1_none}</span>
+      <label class="cta secondary" for="v-file" style="width:auto">${ev.fileName ? t.v1_change : t.v1_btn}</label>
+      <input id="v-file" type="file" accept="image/*,video/*" hidden>
+    </div>
+    ${e.file ? `<p class="small" style="color:var(--danger);font-weight:700">${e.file}</p>` : ""}
+    <p class="small muted">${t.v1_note}</p>`;
+  if (n === 2) body = `
+    <div class="field ${e.desc ? "err" : ""}">
+      <label for="v-desc">${t.v2_t}</label>
+      <textarea id="v-desc" data-ev="desc" placeholder="${esc(t.v2_ph)}">${esc(ev.desc)}</textarea>
+      ${e.desc ? `<span class="msg">${e.desc}</span>` : `<span class="hint" id="descHint">${fmt(t.v2_hint, { n: Math.min(ev.desc.trim().length, 30) })}</span>`}
+    </div>`;
+  if (n === 3) body = `
+    <h3 class="h">${t.v3_t}</h3>
+    ${field("grade", t.v_grade, "text", t.v_grade_ph)}
+    ${field("students", t.v_students, "number", t.v_students_ph, 'inputmode="numeric" min="1" max="500"')}
+    ${field("subject", t.v_subject, "text", t.v_subject_ph)}
+    ${field("date", t.v_date, "date", "")}`;
+  return `
+  <div class="pad">
+    <h2 class="h">${t.v_head}</h2>
+    <div class="field">
+      <span class="small"><b>${fmt(t.v_step, { n })}</b></span>
+      <div class="bar"><i style="width:${Math.round((n - 1) / 3 * 100 + 33.4)}%"></i></div>
+    </div>
+    <div class="steps-ind">${t.v_names.map((x, i) => `<div class="${i < n ? "on" : ""}"><i></i>${x}</div>`).join("")}</div>
+    <div class="card">${body}</div>
+    <button class="cta" data-act="evNext">${n === 3 ? t.v_submit : t.v_next} ${ico(n === 3 ? "check" : "arrow")}</button>
+    ${n > 1 ? `<button class="cta secondary" data-act="evPrev">${t.back}</button>` : ""}
+  </div>`;
+};
+
+function certData() {
+  const t = L(), u = S.user || {}, ev = S.ev;
+  const date = S.cert ? new Date(S.cert.issued).toLocaleDateString(S.lang === "es" ? "es-MX" : "en-US", { year: "numeric", month: "long", day: "numeric" }) : "";
+  const profile = [t.levels[u.level], t.areas[u.area], t.countries[u.country]].filter(Boolean).join(" · ");
+  return {
+    name: u.name || "", profile, date, id: S.cert?.id || "",
+    evidence: fmt(t.c_evidence, { type: t.ev[S.evType ?? 0][0], grade: ev.grade, students: ev.students, subject: ev.subject || "—" }),
+  };
+}
+V.certificate = () => {
+  const t = L(), c = certData();
+  return `
+  <section class="verified">${ico("check")}<div><b>${t.c_verified}</b><p class="small">${t.c_verified_d}</p></div></section>
+  <div class="pad">
+    <div class="cert">
+      <span class="seal">${ico("badge")}</span>
+      <span class="brand">${t.c_brand}</span>
+      <span class="level">${t.c_level}</span>
+      <span class="small muted">${t.c_certifies}</span>
+      <span class="name">${esc(c.name)}</span>
+      <span class="small muted">${esc(c.profile)}</span>
+      <span class="small muted">${t.c_demo}</span>
+      <span class="comp">${t.c_comp}</span>
+      <span class="small" style="color:#2D5A12;font-weight:700">${esc(c.evidence)}</span>
+      <span class="meta">${esc(fmt(t.c_meta, { date: c.date, id: c.id }))}</span>
+    </div>
+    <button class="cta linkedin" data-act="share"><b>in</b> ${t.c_share}</button>
+    <button class="cta dark" data-act="download">${ico("download")} ${t.c_download}</button>
+    <button class="cta" data-go="upgrade">${ico("lock")} ${t.c_next}</button>
+  </div>`;
+};
+
+V.upgrade = () => {
+  const t = L(), n = S.cert ? 1 : 0;
+  return `
+  <div class="pad">
+    <h2 class="h">${t.u_head}</h2>
+    <div class="field"><span class="small"><b>${fmt(t.u_progress, { n })}</b></span><div class="bar"><i style="width:${n ? 33.4 : 3}%"></i></div></div>
+    <div class="card">
+      ${t.mods.map((m, i) => `
+        <div class="module-row ${i ? "locked" : ""}">
+          <span class="dot ${i ? "locked" : n ? "done" : "now"}">${i ? ico("lock") : n ? ico("check") : 1}</span>
+          <span class="t">${m}</span>
+          ${i ? `<span class="chip lock">${t.u_needs}</span>` : `<span class="chip ${n ? "green" : "amber"}">${n ? t.st_done : t.st_next}</span>`}
+        </div>`).join("")}
+    </div>
+    <h3 class="h">${t.u_plans}</h3>
+    ${t.plans.map((p, i) => `
+      <div class="plan ${i === 1 ? "featured" : ""}">
+        ${p.tag ? `<span class="chip amber" style="align-self:flex-start">${p.tag}</span>` : ""}
+        <h3 class="h">${p.n}</h3>
+        <span class="price">${p.p} <small>${p.per}</small></span>
+        <ul>${p.f.map(x => `<li>${ico("check")}<span>${x}</span></li>`).join("")}</ul>
+        <button class="cta ${i === 0 ? "secondary" : i === 2 ? "dark" : ""}" ${i === 0 ? "disabled" : `data-act="plan${i}"`}>${p.b}</button>
+      </div>`).join("")}
+    <button class="cta secondary" data-go="feedback">${t.u_feedback}</button>
+  </div>`;
+};
+
+V.feedback = () => {
+  const t = L(), fb = S.fb;
+  if (S.fbSent) return `
+    <div class="verifying">
+      <span class="seal">${ico("check")}</span>
+      <h2 class="h">${t.fb_thanks}</h2>
+      <p class="muted">${t.fb_thanks_d}</p>
+      <button class="cta" data-act="restart">${t.fb_restart}</button>
+    </div>`;
+  const opts = (q, list) => `<div class="choices">${list.map((o, i) => `<button type="button" class="choice" data-act="fb" data-q="${q}" data-v="${i}" aria-pressed="${fb[q] === i}">${o}</button>`).join("")}</div>`;
+  return `
+  <div class="pad">
+    <h2 class="h">${t.fb_title}</h2>
+    <p class="muted">${t.fb_lead}</p>
+    <div class="card"><b>${t.q1}</b>${opts("q1", t.q1o)}</div>
+    <div class="card"><b>${t.q2}</b>
+      <div class="scale">${[1, 2, 3, 4, 5].map(v => `<button type="button" data-act="fb" data-q="q2" data-v="${v}" aria-pressed="${fb.q2 === v}">${v}</button>`).join("")}</div>
+      <div class="scale-labels"><span>${t.q2l[0]}</span><span>${t.q2l[1]}</span></div>
+    </div>
+    <div class="card"><b>${t.q3}</b>${opts("q3", t.q3o)}</div>
+    <div class="card field"><label for="fb-q4">${t.q4}</label><textarea id="fb-q4" data-fb="q4" placeholder="${esc(t.q4_ph)}">${esc(fb.q4)}</textarea></div>
+    <button class="cta" data-act="sendFb" ${fb.q1 == null || fb.q2 == null || fb.q3 == null ? "disabled" : ""}>${t.fb_send}</button>
+    ${fb.q1 == null || fb.q2 == null || fb.q3 == null ? `<p class="small muted">${t.fb_need}</p>` : ""}
+  </div>`;
+};
+
+/* ================= render ================= */
+function render(scrollTop = false) {
+  const t = L();
+  document.documentElement.lang = S.lang;
+  $("#appTitle").textContent = t.screens[S.screen];
+  const bb = $("#backBtn");
+  bb.hidden = !S.history.length || S.screen === "welcome";
+  bb.innerHTML = ico("back");
+  bb.setAttribute("aria-label", t.back);
+  $("#langEn").setAttribute("aria-pressed", S.lang === "en");
+  $("#langEs").setAttribute("aria-pressed", S.lang === "es");
+  screenEl.innerHTML = V[S.screen]();
+  if (scrollTop) { screenEl.scrollTop = 0; if (window.innerWidth < 560) window.scrollTo(0, 0); }
+  renderSide();
+  persist();
+}
+function renderSide() {
+  const t = L();
+  $("#side").innerHTML = `
+    <p class="kicker">${t.side_kicker}</p>
+    <h1>${t.side_title}</h1>
+    <p>${t.side_lead}</p>
+    <div class="side-card">
+      <h2>${t.side_how}</h2>
+      <ol>${t.side_steps.map(s => `<li>${s}</li>`).join("")}</ol>
+    </div>
+    <p class="small">${t.side_case}</p>
+    <div class="side-row">
+      <button class="btn-outline" type="button" id="restartBtn">${t.restartTest}</button>
+    </div>
+    ${window.claude?.use ? `<p class="rec ${recording ? "on" : ""}"><i></i>${recording ? t.side_rec_on : t.side_rec_off}</p>` : ""}`;
+}
+
+/* ================= overlays ================= */
+function toast(msg) {
+  const el = $("#toast");
+  el.textContent = msg; el.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => { el.hidden = true; }, 2600);
+}
+function sheet(html) {
+  $("#overlay").innerHTML = `<div class="sheet-wrap" data-act="closeSheet"><div class="sheet" role="dialog" aria-modal="true">${html}</div></div>`;
+  $("#overlay .sheet button, #overlay .sheet a")?.focus();
+}
+function closeSheet() { $("#overlay").innerHTML = ""; }
+function sharePost() {
+  const t = L();
+  return fmt(t.sh_post, { comp: t.c_comp, id: S.cert?.id || "" });
+}
+function openShare() {
+  const t = L();
+  track({ shareOpened: true });
+  sheet(`
+    <h3 class="h">${t.sh_title}</h3>
+    <div class="post" id="postText">${esc(sharePost())}</div>
+    <b>${t.sh_q}</b>
+    <div class="choices">
+      <button class="choice" data-act="asWritten" data-v="yes" aria-pressed="${S.m.shareAsWritten === "yes"}">${t.sh_yes}</button>
+      <button class="choice" data-act="asWritten" data-v="no" aria-pressed="${S.m.shareAsWritten === "no"}">${t.sh_no}</button>
+    </div>
+    <button class="cta secondary" data-act="copyPost">${t.sh_copy}</button>
+    <a class="cta linkedin" href="https://www.linkedin.com/feed/" target="_blank" rel="noopener" style="text-decoration:none"><b>in</b> ${t.sh_open}</a>
+    <button class="textlink" data-act="closeSheet">${t.sh_close}</button>`);
+}
+function openPlan(kind) {
+  const t = L();
+  track(kind === 1 ? { educatorClicked: true } : { institutionalClicked: true });
+  sheet(`
+    <h3 class="h">${t.plans[kind].n}</h3>
+    <p>${kind === 1 ? t.pm_edu : t.pm_inst}</p>
+    <button class="cta" data-act="closeSheet">${t.pm_ok}</button>`);
+}
+
+/* ================= certificate download (PNG) ================= */
+function wrap(ctx, text, x, y, maxW, lh) {
+  const words = text.split(" "); let line = "";
+  for (const w of words) {
+    const test = line ? line + " " + w : w;
+    if (ctx.measureText(test).width > maxW && line) { ctx.fillText(line, x, y); line = w; y += lh; } else line = test;
+  }
+  if (line) ctx.fillText(line, x, y);
+  return y + lh;
+}
+async function downloadCert() {
+  track({ downloadClicked: true });
+  const t = L(), c = certData();
+  const W = 1600, H = 1130, cv = document.createElement("canvas");
+  cv.width = W; cv.height = H;
+  const x = cv.getContext("2d");
+  try { await document.fonts.ready; } catch {}
+  x.fillStyle = "#FFFFFF"; x.fillRect(0, 0, W, H);
+  x.strokeStyle = "#0E2340"; x.lineWidth = 28; x.strokeRect(14, 14, W - 28, H - 28);
+  x.strokeStyle = "#F2A900"; x.lineWidth = 3; x.strokeRect(50, 50, W - 100, H - 100);
+  x.textAlign = "center"; x.fillStyle = "#0E2340";
+  x.font = '800 40px "Bricolage Grotesque", Arial'; x.fillText(t.c_brand, W / 2, 170);
+  x.fillStyle = "#8A5D00"; x.font = '800 26px "Nunito Sans", Arial'; x.fillText(t.c_level.toUpperCase(), W / 2, 220);
+  x.fillStyle = "#55627A"; x.font = '400 30px "Nunito Sans", Arial'; x.fillText(t.c_certifies, W / 2, 320);
+  x.fillStyle = "#0E2340"; x.font = '800 76px "Bricolage Grotesque", Arial'; x.fillText(c.name, W / 2, 410);
+  x.fillStyle = "#55627A"; x.font = '400 28px "Nunito Sans", Arial'; x.fillText(c.profile, W / 2, 465);
+  x.fillText(t.c_demo, W / 2, 560);
+  x.fillStyle = "#0E2340"; x.font = '800 36px "Nunito Sans", Arial';
+  let y = wrap(x, t.c_comp, W / 2, 625, 1200, 50);
+  x.fillStyle = "#2D5A12"; x.font = '700 26px "Nunito Sans", Arial'; y = wrap(x, c.evidence, W / 2, y + 40, 1250, 36);
+  x.fillStyle = "#55627A"; x.font = '400 24px "Nunito Sans", Arial'; x.fillText(fmt(t.c_meta, { date: c.date, id: c.id }), W / 2, H - 120);
+  const blob = await new Promise(r => cv.toBlob(r, "image/png"));
+  if (!blob) { toast(t.dl_no); return; }
+  await saveFile(`AIA-certificate-${c.id || "demo"}.png`, blob, t.dl_ok);
+}
+// Inside Claude the viewer's downloads capability saves the file; on a plain website a blob link does.
+async function saveFile(filename, data, okMsg) {
+  const t = L();
+  if (window.claude?.use) {
+    let dl = null;
+    try { dl = await window.claude.use("downloads"); } catch {}
+    if (!dl) { toast(t.dl_no); return; }
+    try { const r = await dl.save({ filename, data }); if (r?.status === "saved" && okMsg) toast(okMsg); }
+    catch (err) { if (err?.code === "unavailable") toast(t.dl_no); }
+    return;
+  }
+  const blob = data instanceof Blob ? data : new Blob([data], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  if (okMsg) toast(okMsg);
+}
+
+/* ================= events ================= */
+document.addEventListener("click", ev => {
+  const lang = ev.target.closest("[data-lang]");
+  if (lang) { S.lang = lang.dataset.lang; track({ lang: S.lang }); render(); renderResults(); return; }
+  if (ev.target.closest("#backBtn")) { back(); return; }
+  if (ev.target.closest("#restartBtn")) { restart(); return; }
+  if (ev.target.closest("#exportCsv")) { exportCsv(); return; }
+  const g = ev.target.closest("[data-go]");
+  if (g && !g.disabled) { go(g.dataset.go); return; }
+  const a = ev.target.closest("[data-act]");
+  if (!a || a.disabled) return;
+  const act = a.dataset.act;
+  if (act === "closeSheet" && a.classList.contains("sheet-wrap") && ev.target !== a) return;
+  const t = L();
+  switch (act) {
+    case "start":
+      if (!S.m.started) { S.m.started = true; track({}); }
+      go(S.user ? "dashboard" : "register"); break;
+    case "nextStep": {
+      if (S.m.dashboardActionSeconds == null && S.dashArrive) track({ dashboardActionSeconds: Math.round((Date.now() - S.dashArrive) / 1000) });
+      go(nextStep()[1]); break;
+    }
+    case "startModule": S.moduleStarted = true; S.openStep = S.steps.findIndex(x => !x); if (S.openStep < 0) S.openStep = 0; render(); break;
+    case "toggleStep": { const i = +a.dataset.i; S.openStep = S.openStep === i ? -1 : i; render(); break; }
+    case "plan": S.planChoice = +a.dataset.j; render(); break;
+    case "markStep": {
+      const i = +a.dataset.i; S.steps[i] = !S.steps[i];
+      if (S.steps[i]) { const nx = S.steps.findIndex(x => !x); S.openStep = nx; }
+      track({ stepsDone: stepsDone() }); render(); break;
+    }
+    case "evType": S.evType = +a.dataset.i; track({ evidenceType: ["photo", "screenshot", "video"][S.evType] }); render(); break;
+    case "toEvidence": track({ evidenceStarted: true, evidenceStep: Math.max(S.m.evidenceStep, 1) }); go("evidence"); break;
+    case "evNext": evNext(); break;
+    case "evPrev": S.evStep = Math.max(1, S.evStep - 1); S.evErrors = {}; render(true); break;
+    case "share": openShare(); break;
+    case "asWritten": track({ shareAsWritten: a.dataset.v }); a.parentElement.querySelectorAll(".choice").forEach(b => b.setAttribute("aria-pressed", b === a)); break;
+    case "copyPost": {
+      const text = sharePost();
+      const done = () => toast(t.sh_copied);
+      const fail = () => { const r = document.createRange(); r.selectNodeContents($("#postText")); const s = getSelection(); s.removeAllRanges(); s.addRange(r); toast(t.sh_copy_fail); };
+      try { navigator.clipboard.writeText(text).then(done, fail); } catch { fail(); }
+      break;
+    }
+    case "closeSheet": closeSheet(); break;
+    case "download": downloadCert(); break;
+    case "plan1": openPlan(1); break;
+    case "plan2": openPlan(2); break;
+    case "fb": { const q = a.dataset.q; S.fb[q] = +a.dataset.v; render(); break; }
+    case "sendFb": {
+      const fb = S.fb;
+      track({ survey: { useInClass: ["yes", "maybe", "no"][fb.q1], evidenceEase: fb.q2, wouldPay: ["pay", "institution", "not_now"][fb.q3], comment: (fb.q4 || "").slice(0, 600) } });
+      flush(); S.fbSent = true; render(true); break;
+    }
+    case "restart": restart(); break;
+  }
+});
+
+document.addEventListener("input", ev => {
+  const el = ev.target;
+  if (el.dataset.field) {
+    S.form[el.dataset.field] = el.value;
+    if (S.errors[el.dataset.field]) { delete S.errors[el.dataset.field]; el.closest(".field").classList.remove("err"); el.closest(".field").querySelector(".msg")?.remove(); }
+    const c = $("#regCount"); if (c) c.textContent = fmt(L().r_count, { n: filled() });
+    persist();
+  }
+  if (el.dataset.ev) {
+    S.ev[el.dataset.ev] = el.value;
+    if (el.dataset.ev === "desc") { const h = $("#descHint"); if (h) h.textContent = fmt(L().v2_hint, { n: Math.min(el.value.trim().length, 30) }); }
+    persist();
+  }
+  if (el.dataset.fb) { S.fb[el.dataset.fb] = el.value; persist(); }
+});
+document.addEventListener("change", ev => {
+  if (ev.target.id === "v-file") {
+    const file = ev.target.files?.[0]; if (!file) return;
+    S.ev.fileName = file.name; S.ev.preview = ""; delete S.evErrors.file;
+    if (file.type.startsWith("image/") && file.size < 15e6) {
+      const r = new FileReader();
+      r.onload = () => { S.ev.preview = String(r.result); render(); };
+      r.readAsDataURL(file);
+    }
+    render();
+  }
+});
+document.addEventListener("submit", ev => {
+  if (ev.target.id !== "regForm") return;
+  ev.preventDefault();
+  const t = L(), f = S.form, e = {};
+  if (!f.name.trim()) e.name = t.e_name;
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(f.email.trim())) e.email = t.e_email;
+  ["country", "level", "area"].forEach(k => { if (f[k] === "") e[k] = t.e_select; });
+  if (f.password.length < 8) e.password = t.e_pass;
+  S.errors = e;
+  if (Object.keys(e).length) { render(); $(".field.err input, .field.err select")?.focus(); return; }
+  const secs = Math.round((Date.now() - (S.regStart || Date.now())) / 1000);
+  S.user = { name: f.name.trim(), country: +f.country, level: +f.level, area: +f.area };
+  S.form = { ...S.form, password: "" };
+  track({ registered: true, registerSeconds: secs, profile: { country: STR.en.countries[+f.country], level: STR.en.levels[+f.level], area: STR.en.areas[+f.area] } });
+  S.history = ["welcome"];
+  go("dashboard", { replace: true });
+});
+
+function evNext() {
+  const t = L(), ev = S.ev, e = {};
+  if (S.evStep === 1 && !ev.fileName) e.file = t.e_file;
+  if (S.evStep === 2 && ev.desc.trim().length < 30) e.desc = t.e_desc;
+  if (S.evStep === 3) {
+    if (!ev.grade.trim()) e.grade = t.e_grade;
+    if (!(+ev.students > 0)) e.students = t.e_students;
+    if (!ev.date) e.date = t.e_date;
+  }
+  S.evErrors = e;
+  if (Object.keys(e).length) { render(); return; }
+  if (S.evStep < 3) { S.evStep++; track({ evidenceStep: Math.max(S.m.evidenceStep, S.evStep) }); render(true); return; }
+  S.verifying = true; render(true);
+  setTimeout(() => {
+    S.verifying = false;
+    S.cert = { id: "AIA-M1-" + Math.floor(100000 + Math.random() * 900000), issued: Date.now() };
+    track({ evidenceCompleted: true, evidenceStep: 3 });
+    S.history = ["welcome", "dashboard"];
+    go("certificate", { replace: true });
+  }, 1600);
+}
+
+function restart() {
+  flush();
+  const lang = S.lang;
+  S = fresh(); S.lang = lang; S.m.lang = lang;
+  closeSheet(); render(true);
+}
+
+/* ================= facilitator results ================= */
+let sessions = [], isEditor = false;
+const pct = (a, b) => b ? Math.round(a / b * 100) : null;
+function hypRows() {
+  const st = sessions.filter(s => s.started);
+  const reg = st.filter(s => s.registered);
+  const dash = st.filter(s => RANK[s.furthest] >= 3);
+  const q1 = st.filter(s => s.survey?.useInClass);
+  const evS = st.filter(s => s.evidenceStarted);
+  const share = st.filter(s => s.shareAsWritten);
+  const up = st.filter(s => s.upgradeViewed);
+  return [
+    [pct(reg.filter(s => s.registerSeconds != null && s.registerSeconds < 180).length, reg.length), reg.length, 80],
+    [pct(dash.filter(s => s.dashboardActionSeconds != null && s.dashboardActionSeconds <= 60).length, dash.length), dash.length, null],
+    [pct(q1.filter(s => s.survey.useInClass === "yes").length, q1.length), q1.length, 70],
+    [pct(evS.filter(s => s.evidenceCompleted).length, evS.length), evS.length, 75],
+    [pct(share.filter(s => s.shareAsWritten === "yes").length, share.length), share.length, 60],
+    [pct(up.filter(s => s.educatorClicked || s.institutionalClicked).length, up.length), up.length, 40],
+  ];
+}
+function renderResults() {
+  const box = $("#results");
+  if (!isEditor) { box.hidden = true; return; }
+  box.hidden = false;
+  const t = L(), rows = hypRows(), st = sessions.filter(s => s.started).sort((a, b) => String(b.startedAt).localeCompare(String(a.startedAt)));
+  const yn = v => v === true ? t.yes : v === false ? t.no : "—";
+  box.innerHTML = `
+    <div class="side-row" style="justify-content:space-between">
+      <div><h2>${t.res_title}</h2><p class="lead">${t.res_lead}</p></div>
+      <div class="side-row"><span class="pill">${fmt(t.res_n, { n: st.length })}</span><button class="btn-outline" id="exportCsv" type="button">${t.res_export}</button></div>
+    </div>
+    <div class="hyp-grid">
+      ${t.hyp.map((h, i) => {
+        const [v, n, target] = rows[i];
+        const state = n < 3 || v == null ? "wait" : target == null ? "wait" : v > target ? "ok" : "low";
+        const pill = target == null && n >= 3 ? "" : `<span class="pill ${state === "ok" ? "good" : state === "low" ? "warn" : ""}">${state === "ok" ? t.pill_ok : state === "low" ? t.pill_low : t.pill_wait}</span>`;
+        return `<div class="hyp"><div class="top"><span class="code">${h[0]}</span>${pill}</div>
+          <span class="val">${v == null ? "—" : v + "%"}</span>
+          <p><b>${h[1]}</b> · n = ${n}</p><p>${h[2]}</p></div>`;
+      }).join("")}
+    </div>
+    <div class="table-wrap">
+      ${st.length ? `<table>
+        <thead><tr>${t.cols.map(c => `<th>${c}</th>`).join("")}</tr></thead>
+        <tbody>${st.map(s => `<tr>
+          <td>${esc(new Date(s.startedAt).toLocaleString(S.lang === "es" ? "es-MX" : "en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }))}</td>
+          <td>${esc((s.lang || "").toUpperCase())}</td>
+          <td>${esc(STR[S.lang].screens[s.furthest] || s.furthest)}</td>
+          <td>${s.registerSeconds ?? "—"}</td>
+          <td>${s.dashboardActionSeconds ?? "—"}</td>
+          <td>${s.stepsDone ?? 0}/3</td>
+          <td>${s.evidenceCompleted ? t.yes : s.evidenceStarted ? `${t.no} (${s.evidenceStep}/3)` : "—"}</td>
+          <td>${s.shareAsWritten === "yes" ? t.yes : s.shareAsWritten === "no" ? t.no : "—"}</td>
+          <td>${s.educatorClicked ? "Educator" : s.institutionalClicked ? "Inst." : s.upgradeViewed ? t.no : "—"}</td>
+          <td>${esc(s.survey?.useInClass ?? "—")}</td>
+          <td>${s.survey?.evidenceEase ?? "—"}</td>
+          <td>${esc(s.survey?.wouldPay ?? "—")}</td>
+          <td style="white-space:normal;min-width:220px">${esc(s.survey?.comment || "")}</td>
+        </tr>`).join("")}</tbody></table>` : `<p class="empty">${t.res_none}</p>`}
+    </div>`;
+}
+async function exportCsv() {
+  const head = ["startedAt", "lang", "device", "furthest", "registerSeconds", "dashboardActionSeconds", "stepsDone", "evidenceType", "evidenceStarted", "evidenceStep", "evidenceCompleted", "shareOpened", "shareAsWritten", "downloadClicked", "upgradeViewed", "educatorClicked", "institutionalClicked", "useInClass", "evidenceEase", "wouldPay", "comment", "country", "level", "area"];
+  const cell = v => { const s = v == null ? "" : String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+  const lines = [head.join(",")].concat(sessions.filter(s => s.started).map(s => [
+    s.startedAt, s.lang, s.device, s.furthest, s.registerSeconds, s.dashboardActionSeconds, s.stepsDone, s.evidenceType, s.evidenceStarted, s.evidenceStep, s.evidenceCompleted,
+    s.shareOpened, s.shareAsWritten, s.downloadClicked, s.upgradeViewed, s.educatorClicked, s.institutionalClicked,
+    s.survey?.useInClass, s.survey?.evidenceEase, s.survey?.wouldPay, s.survey?.comment, s.profile?.country, s.profile?.level, s.profile?.area,
+  ].map(cell).join(",")));
+  await saveFile("aia-validation-sessions.csv", lines.join("\n"));
+}
+
+/* ================= boot ================= */
+render();
+(async () => {
+  if (!window.claude?.use) return;
+  try { db = await window.claude.use("db"); } catch { db = null; }
+  recording = !!db;
+  renderSide();
+  if (S.m.started) flush();
+  let user = null;
+  try { user = await window.claude.use("user"); } catch {}
+  try { isEditor = user ? await user.canEdit() : false; } catch { isEditor = false; }
+  if (isEditor && db) {
+    db.collection("sessions").onSnapshot(snap => {
+      sessions = snap.docs.map(d => d.data()).filter(Boolean);
+      renderResults();
+    }, () => {});
+  }
+  renderResults();
+})();
+})();
+</script>
+
+</body>
+</html>
