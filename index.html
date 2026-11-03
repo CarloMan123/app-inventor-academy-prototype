@@ -645,8 +645,20 @@ const firstName = () => (S.user?.name || "").trim().split(/\s+/)[0] || "";
 const stepsDone = () => S.steps.filter(Boolean).length;
 const progressPct = () => Math.round(stepsDone() * 20 + (S.cert ? 40 : 0));
 
-/* ================= anonymous metrics (db) ================= */
+/* ================= anonymous metrics (db inside Claude, Google Sheet on a plain website) ================= */
+const SHEET_ENDPOINT = "https://script.google.com/macros/s/AKfycbzz3JzDATIXOmQTPw4CTTMyxn7xVkqbJSJsDwCuse-Tm8MHk99qTtYRslZdJCydmWeQEQ/exec";
 let db = null, saveTimer = null, recording = false;
+function sheetRow(m) {
+  return {
+    id: m.id, startedAt: m.startedAt, updatedAt: m.updatedAt, lang: m.lang, device: m.device, furthest: m.furthest,
+    path: m.path.join(" > "), registered: m.registered, registerSeconds: m.registerSeconds, dashboardActionSeconds: m.dashboardActionSeconds,
+    country: m.profile?.country, level: m.profile?.level, area: m.profile?.area, stepsDone: m.stepsDone,
+    evidenceType: m.evidenceType, evidenceStarted: m.evidenceStarted, evidenceStep: m.evidenceStep, evidenceCompleted: m.evidenceCompleted,
+    certificateViewed: m.certificateViewed, shareOpened: m.shareOpened, shareAsWritten: m.shareAsWritten, downloadClicked: m.downloadClicked,
+    upgradeViewed: m.upgradeViewed, educatorClicked: m.educatorClicked, institutionalClicked: m.institutionalClicked,
+    useInClass: m.survey?.useInClass, evidenceEase: m.survey?.evidenceEase, wouldPay: m.survey?.wouldPay, comment: m.survey?.comment,
+  };
+}
 function track(patch) {
   Object.assign(S.m, patch);
   if (!S.m.started) return;
@@ -655,9 +667,17 @@ function track(patch) {
   saveTimer = setTimeout(flush, 700);
 }
 function flush() {
-  if (!db || !S.m.started) return;
-  db.collection("sessions").doc(S.m.id).set(JSON.parse(JSON.stringify(S.m))).catch(() => {});
+  if (!S.m.started) return;
+  if (db) { db.collection("sessions").doc(S.m.id).set(JSON.parse(JSON.stringify(S.m))).catch(() => {}); return; }
+  if (SHEET_ENDPOINT && !window.claude?.use) {
+    fetch(SHEET_ENDPOINT, {
+      method: "POST", mode: "no-cors", keepalive: true,
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(sheetRow(S.m)),
+    }).catch(() => {});
+  }
 }
+window.addEventListener("pagehide", () => { clearTimeout(saveTimer); flush(); });
 function visit(screen) {
   const m = S.m;
   if (RANK[screen] > RANK[m.furthest]) m.furthest = screen;
@@ -1027,7 +1047,7 @@ function renderSide() {
     <div class="side-row">
       <button class="btn-outline" type="button" id="restartBtn">${t.restartTest}</button>
     </div>
-    ${window.claude?.use ? `<p class="rec ${recording ? "on" : ""}"><i></i>${recording ? t.side_rec_on : t.side_rec_off}</p>` : ""}`;
+    ${window.claude?.use || SHEET_ENDPOINT ? `<p class="rec ${recording ? "on" : ""}"><i></i>${recording ? t.side_rec_on : t.side_rec_off}</p>` : ""}`;
 }
 
 /* ================= overlays ================= */
@@ -1328,9 +1348,10 @@ async function exportCsv() {
 }
 
 /* ================= boot ================= */
+if (!window.claude?.use && SHEET_ENDPOINT) recording = true;
 render();
 (async () => {
-  if (!window.claude?.use) return;
+  if (!window.claude?.use) { if (S.m.started) flush(); return; }
   try { db = await window.claude.use("db"); } catch { db = null; }
   recording = !!db;
   renderSide();

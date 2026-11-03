@@ -27,7 +27,11 @@ A short feedback form follows P8.
 2. Explore it as a teacher and think aloud.
 3. Use **Restart test** before the next participant.
 
-Everything a participant types stays in their own browser. This GitHub Pages version does not send data anywhere.
+## Validation data
+
+Each test session is saved anonymously to a Google Sheet through the Apps Script web app in [`apps-script/Code.gs`](apps-script/Code.gs): one row per session in the **Sessions** tab, and the H1–H6 indicators against their targets in the **Summary** tab. Names, emails and passwords are never sent; they stay in the participant's browser.
+
+To use your own sheet: create a Google Sheet, open Extensions → Apps Script, paste `Code.gs`, run `setup`, deploy it as a web app (Execute as: Me, Who has access: Anyone) and put its `/exec` URL in `SHEET_ENDPOINT` inside `index.html`.
 
 ---
 
